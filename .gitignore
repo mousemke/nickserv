@@ -1,0 +1,7 @@
+.DS_Store
+logMasterList.json
+logMasterList-slack.json
+node_modules/
+npm-debug.log
+nickserv.config.js
+nickserv-slack.config.js
