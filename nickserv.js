@@ -1,15 +1,16 @@
 
-var userConfig      = require( './nickserv.config.js' );
+
+// Create the configuration
 
 var channel, _bot,
 
+    userConfig  = require( './nickserv.config.js' ),
     http        = require( 'http' ),
     https       = require( 'https' ),
     irc         = require( 'irc' ),
     fs          = require( 'fs' ),
-    active      = {},
-    moonRegex   = /(?:m([o]+)n)/,
     logMasterList = {};
+
 
 
 /**
@@ -21,8 +22,12 @@ var channel, _bot,
  */
 function init()
 {
-    _bot = new irc.Client( userConfig.server, userConfig.botName, {
-        channels: userConfig.channels
+     _bot = new irc.Client( userConfig.server, userConfig.botName, {
+        channels    : userConfig.channels,
+        password    : userConfig.serverPassword,
+        showErrors  : false,
+        autoRejoin  : true,
+        autoConnect : true
     });
 
     _bot.addListener( 'error', function( message )
@@ -145,7 +150,7 @@ function listenToQuit( user )
  */
 function loadMasterList()
 {
-    var url = '/nickserv/logMasterList.json';
+    var url = '/nickserv/logMasterList-slack.json';
 
     http.get( url, function( res )
     {
@@ -172,7 +177,7 @@ function writeMasterList()
 {
     var jsonMasterList = JSON.stringify( logMasterList );
 
-    fs.writeFile( './logMasterList.json', jsonMasterList, function ( err )
+    fs.writeFile( './logMasterList-slack.json', jsonMasterList, function ( err )
     {
         return console.log( err );
     });
