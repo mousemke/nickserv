@@ -12,6 +12,35 @@ var channel, _bot,
     logMasterList = {};
 
 
+function identify( sourceUser, command, pass )
+{
+    if ( ! logMasterList[ sourceUser ] )
+    {
+        botText = 'please register first';
+    }
+    else if ( ! pass )
+    {
+        botText = 'you must supply a password';
+    }
+    else if ( logMasterList[ sourceUser ].on === true )
+    {
+        botText = 'you are already identified';
+    }
+    else if ( logMasterList[ sourceUser ].p === content )
+    {
+        console.log( sourceUser + ' is now identified' );
+        logMasterList[ sourceUser ].on = true;
+        botText = 'you are now identified as ' + sourceUser;
+        writeMasterList();
+    }
+    else
+    {
+        botText = 'wrong password';
+    }
+
+    _bot.say( sourceUser, botText );
+}
+
 
 /**
  * init
@@ -47,11 +76,13 @@ function init()
 
 function listenToPm( from, text )
 {
-    var textSplit = text.split( ' ' );
+    var textSplit   = text.split( ' ' );
 
-    var command = textSplit[ 0 ],
-        pass    = textSplit[ 1 ],
-        botText = '';
+    var sourceUser  = from,
+        apiCode     = textSplit[ 0 ],
+        command     = textSplit[ 1 ],
+        content     = textSplit[ 2 ],
+        botText     = '';
 
     if ( text === 'die' && userConfig.admins.indexOf( from ) !== -1 )
     {
@@ -60,71 +91,27 @@ function listenToPm( from, text )
             console.log( from + ' killed me' );
         });
     }
-    else if ( command === 'identify' )
+    else if ( apiCode === 'identify' )
     {
-        if ( ! logMasterList[ from ] )
+        identify( sourceUser, apiCode, command );
+    }
+    else if ( apiCode === 'register' )
+    {
+        register( sourceUser, apiCode, command );
+    }
+    else if ( apiCode === 'help' )
+    {
+        _bot.say( from, userConfig.helpText() );
+    }
+    else if ( apiCode === userConfig.apiCode )
+    {
+        if ( ! logMasterList[ content ] )
         {
-            botText = 'please register first';
-        }
-        else if ( ! pass )
-        {
-            botText = 'you must supply a password';
-        }
-        else if ( logMasterList[ from ].on === true )
-        {
-            botText = 'you are already identified';
-        }
-        else if ( logMasterList[ from ].p === pass )
-        {
-            console.log( from + ' is now identified' );
-            logMasterList[ from ].on = true;
-            botText = 'you are now identified as ' + from;
-            writeMasterList();
+            _bot.say( from, userConfig.apiCode + ' notRegistered ' + content );
         }
         else
         {
-            botText = 'wrong password';
-        }
-
-        _bot.say( from, botText );
-    }
-    else if ( command === 'register' )
-    {
-         if ( logMasterList[ from ] )
-        {
-            botText = 'you are already registered';
-        }
-        else if ( ! pass )
-        {
-            botText = 'you must supply a password';
-        }
-        else
-        {
-            logMasterList[ from ]       = {};
-            logMasterList[ from ].on    = true;
-            logMasterList[ from ].p     = pass;
-            botText = 'you are now registered and identified as ' + from;
-            writeMasterList();
-        }
-
-        _bot.say( from, botText );
-    }
-    else if ( command === 'help' )
-    {
-        botText = userConfig.helpText;
-        _bot.say( from, botText );
-    }
-    else if ( command === userConfig.api )
-    {
-        var user = textSplit[ 2 ];
-
-        if ( ! logMasterList[ user ] )
-        {
-            _bot.say( from, userConfig.api + ' notRegistered ' + user );
-        }
-        else if ( pass === 'identified' )
-        {
-            _bot.say( from, userConfig.api + ' identified ' + user + ' ' + logMasterList[ user ].on );
+            _bot.say( from, userConfig.apiCode + ' identified ' + content + ' ' + logMasterList[ content ].on );
         }
     }
 }
@@ -150,7 +137,7 @@ function listenToQuit( user )
  */
 function loadMasterList()
 {
-    var url = '/nickserv/logMasterList-slack.json';
+    var url = '/nickserv/logMasterList.json';
 
     http.get( url, function( res )
     {
@@ -169,7 +156,30 @@ function loadMasterList()
     } ).on( 'error', function( e )
     {
         console.log( 'Got error: ', e );
-    });
+    } );
+}
+
+
+function register( sourceUser, command, pass )
+{
+    if ( logMasterList[ sourceUser ] )
+    {
+        botText = 'you are already registered';
+    }
+    else if ( ! pass )
+    {
+        botText = 'you must supply a password';
+    }
+    else
+    {
+        logMasterList[ sourceUser ]       = {};
+        logMasterList[ sourceUser ].on    = true;
+        logMasterList[ sourceUser ].p     = pass;
+        botText = 'you are now registered and identified as ' + sourceUser;
+        writeMasterList();
+    }
+
+    _bot.say( sourceUser, botText );
 }
 
 
@@ -177,7 +187,7 @@ function writeMasterList()
 {
     var jsonMasterList = JSON.stringify( logMasterList );
 
-    fs.writeFile( './logMasterList-slack.json', jsonMasterList, function ( err )
+    fs.writeFile( './logMasterList.json', jsonMasterList, function ( err )
     {
         return console.log( err );
     });

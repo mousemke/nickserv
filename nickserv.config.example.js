@@ -1,13 +1,19 @@
 // Create the configuration
+
+var helpText = function()
+{
+    return 'usage: /msg ' + ( userConfig.botName ) + ' register <password>\n/msg ' +
+         ( userConfig.botName ) + ' identify <password>\n you must identify each time after connecting';
+};
+
 var userConfig = {
-        bots                : [ 'dante', 'zach', 'Guillotine', 'hugo' ],
-        admins              : [ 'mousemke' ],
-        // channels            : [ '#soc-bots' ],
-        server              : 'irc-address or ip',
-        botName             : 'nickserv',
-        selfAddress         : 'my-ip!',
-        api                 : 'an-api-code',
-        helpText            : 'usage:\n/msg NickServ register <password>\n/msg NickServ identify <password>\n you must identify each time after connecting'
-    };
+    bots                : [ 'dante', 'zach', 'Guillotine', 'hugo' ],
+    admins              : [ 'mousemke' ],
+    channels            : [ '#soc-bots' ],
+    server              : 'irc-address or ip',
+    botName             : 'nickserv',
+    apiCode             : 'an-api-code',
+    helpText            : helpText
+};
 
 module.exports = userConfig;
