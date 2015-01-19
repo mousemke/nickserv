@@ -12,7 +12,7 @@ var channel, _bot,
     logMasterList = {};
 
 
-function identify( sourceUser, command, pass )
+function identify( sourceUser, command, pass, content )
 {
     if ( ! logMasterList[ sourceUser ] )
     {
@@ -28,7 +28,6 @@ function identify( sourceUser, command, pass )
     }
     else if ( logMasterList[ sourceUser ].p === content )
     {
-        console.log( sourceUser + ' is now identified' );
         logMasterList[ sourceUser ].on = true;
         botText = 'you are now identified as ' + sourceUser;
         writeMasterList();
@@ -93,7 +92,7 @@ function listenToPm( from, text )
     }
     else if ( apiCode === 'identify' )
     {
-        identify( sourceUser, apiCode, command );
+        identify( sourceUser, apiCode, command, content );
     }
     else if ( apiCode === 'register' )
     {
